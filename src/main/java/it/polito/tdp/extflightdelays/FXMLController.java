@@ -28,7 +28,7 @@ public class FXMLController {
     private Button btnCreaGrafo;
 
     @FXML
-    private ComboBox<?> cmbBoxStati;
+    private ComboBox<String> cmbBoxStati;
 
     @FXML
     private Button btnVisualizzaVelivoli;
@@ -45,16 +45,55 @@ public class FXMLController {
     @FXML
     void doCreaGrafo(ActionEvent event) {
 
+    	this.txtResult.clear();
+    	
+    	txtResult.appendText("Crea grafo...");
+    	
+    	this.model.creaGrafo();
+    	
+    	txtResult.appendText("\n\n#VERTICI: "+this.model.numeroVertici());
+    	txtResult.appendText("\n#ARCHI: "+this.model.numeroArchi());
     }
 
     @FXML
     void doSimula(ActionEvent event) {
 
+    	String scelto = this.cmbBoxStati.getValue();
+    	
+    	if(scelto==null) {
+    		txtResult.setText("Selezionare uno stato di partenza!");
+    		return;
+    	}
+    	
+    	String ti = this.txtT.getText();
+    	String gi = this.txtG.getText();
+    	
+    	try {
+    		
+    		int T = Integer.parseInt(ti);
+    		int G = Integer.parseInt(gi);
+    		
+    		this.model.simula(T, G, scelto);
+        	txtResult.setText("I turisti negli stati:\n"+this.model.risultatoSimulazione());
+        	
+    	}catch(NumberFormatException e) {
+    		txtResult.setText("Inserire sia per i giorni che per i turisti un numero intero positivo.");
+    		return;
+    	}
+    	
     }
 
     @FXML
     void doVisualizzaVelivoli(ActionEvent event) {
 
+    	String scelto = this.cmbBoxStati.getValue();
+    	
+    	if(scelto==null) {
+    		txtResult.setText("Selezionare uno stato di partenza!");
+    		return;
+    	}
+    	txtResult.appendText("\n\nStati associati a "+scelto+":\n"+this.model.statiAssociati(scelto));
+    	
     }
 
     @FXML
@@ -71,5 +110,6 @@ public class FXMLController {
 
 	public void setModel(Model model) {
 		this.model = model;
+		this.cmbBoxStati.getItems().addAll(this.model.elencoStati());
 	}
 }

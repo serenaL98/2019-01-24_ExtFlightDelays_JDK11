@@ -10,12 +10,13 @@ import java.util.List;
 
 import it.polito.tdp.extflightdelays.model.Airline;
 import it.polito.tdp.extflightdelays.model.Airport;
+import it.polito.tdp.extflightdelays.model.Collegamento;
 import it.polito.tdp.extflightdelays.model.Flight;
 
 public class ExtFlightDelaysDAO {
 
 	public List<String> loadAllStates(){
-		String sql = "SELECT distinct(STATE) from airports";
+		String sql = "SELECT distinct(STATE) from airports ORDER BY STATE";
 		List<String> result = new ArrayList<String>();
 
 		try {
@@ -115,4 +116,40 @@ public class ExtFlightDelaysDAO {
 			throw new RuntimeException("Error Connection Database");
 		}
 	}
+	
+	public List<Collegamento> prendiCollegamenti() {
+		String sql = "SELECT f.ORIGIN_AIRPORT_ID orig, a.STATE storig, f.DESTINATION_AIRPORT_ID dest, a2.STATE stdest, COUNT(distinct f.TAIL_NUMBER) peso " + 
+				"FROM flights f, airports a, airports a2 " + 
+				"WHERE f.DESTINATION_AIRPORT_ID = a.ID " + 
+				"		AND f.ORIGIN_AIRPORT_ID = a2.ID " + 
+				"GROUP BY f.ORIGIN_AIRPORT_ID, f.DESTINATION_AIRPORT_ID ";
+		List<Collegamento> result = new LinkedList<>();
+
+		try {
+			Connection conn = DBConnect.getConnection();
+			PreparedStatement st = conn.prepareStatement(sql);
+			ResultSet rs = st.executeQuery();
+
+			while (rs.next()) {
+				int ori = rs.getInt("orig");
+				String stori = rs.getString("storig");
+				int dest = rs.getInt("dest");
+				String stdest = rs.getString("stdest");
+				int peso = rs.getInt("peso");
+				
+				Collegamento temp = new Collegamento(ori, stori, dest, stdest, peso);
+				
+				result.add(temp);
+			}
+
+			conn.close();
+			return result;
+
+		} catch (SQLException e) {
+			e.printStackTrace();
+			System.out.println("Errore connessione al database");
+			throw new RuntimeException("Error Connection Database");
+		}
+	}
+	
 }
